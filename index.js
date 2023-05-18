@@ -29,12 +29,30 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const carCollection = client.db('carszoneDB').collection('carstoys');
+    const carCollection = client.db('carszoneDB').collection('carzone');
+
+    // app.get('/cars', async(req, res) =>{
+    //   const result = await carCollection.find().limit(20).toArray();
+    //   res.send(result)
+    // })
+
+    app.post('/cars', async(req, res) => {
+      const newCar = req.body;
+      console.log(newCar);
+      const result = await carCollection.insertOne(newCar);
+      res.send(result);
+    })
 
     app.get('/cars', async(req, res) =>{
-      const result = await carCollection.find().toArray();
-      res.send(result)
+      let query = {};
+      if(req.query?.email){
+        query = {email : req.query.email}
+      }
+      const result = await carCollection.find(query).toArray();
+      res.send(result);
     })
+
+
 
     app.get('/category/:id', async(req, res) => {
       const id = req.params.id;
