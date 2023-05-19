@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
@@ -31,11 +31,6 @@ async function run() {
 
     const carCollection = client.db('carszoneDB').collection('carzone');
 
-    // app.get('/cars', async(req, res) =>{
-    //   const result = await carCollection.find().limit(20).toArray();
-    //   res.send(result)
-    // })
-
     app.post('/cars', async(req, res) => {
       const newCar = req.body;
       console.log(newCar);
@@ -52,15 +47,45 @@ async function run() {
       res.send(result);
     })
 
-
-
-    app.get('/category/:id', async(req, res) => {
+    app.get('/cars/:id', async(req, res) =>{
       const id = req.params.id;
-      const query = {category_id: id};
-      const result = await carCollection.find(query).toArray();
-      res.send(result)
-      
+      const query = {_id: new ObjectId(id)};
+      const r = await carCollection.findOne(query);
+      res.send(r)
     })
+
+    app.delete('/cars/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)};
+      const result = await carCollection.deleteOne(query);
+      res.send(result)
+    })
+
+    app.put('/cars/:id', async(req, res) =>{
+      const id = req.params.id;
+      console.log(id);
+      const filter = {_id: new ObjectId(id)};
+      const optiion = {upsert: true}
+      const updatetingCar = req.body;
+      const updatedCar = {
+        $set: {
+          price: updatetingCar.price,
+          quantity: updatetingCar.quantity,
+          details: updatetingCar.details,
+        }
+      }
+      const result = await carCollection.updateOne(filter, updatedCar, optiion);
+      res.send(result);
+    })
+
+
+    // app.get('/category/:id', async(req, res) => {
+    //   const id = req.params.id;
+    //   const query = {category_id: id};
+    //   const result = await carCollection.find(query).toArray();
+    //   res.send(result)
+      
+    // })
 
 
     // Send a ping to confirm a successful connection
