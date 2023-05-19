@@ -5,13 +5,7 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-const corsConfig = {
-  origin: '',
-  credentials: true,
-  methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"]
-}
-app.use(cors(corsConfig))
-app.options('', cors(corsConfig))
+app.use(cors())
 app.use(express.json());
 
 app.get('/', (req, res) =>{
@@ -33,9 +27,9 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-     client.connect();
 
     const carCollection = client.db('carszoneDB').collection('carzone');
+    const otherCollection = client.db('carszoneDB').collection('others');
 
     app.post('/cars', async(req, res) => {
       const newCar = req.body;
@@ -49,15 +43,15 @@ async function run() {
       if(req.query?.email){
         query = {email : req.query.email}
       }
-      const result = await carCollection.find(query).toArray();
+      const result = await carCollection.find(query).limit(20).toArray();
       res.send(result);
     })
 
     app.get('/cars/:id', async(req, res) =>{
       const id = req.params.id;
       const query = {_id: new ObjectId(id)};
-      const r = await carCollection.findOne(query);
-      res.send(r)
+      const carrResult = await carCollection.findOne(query);
+      res.send(carrResult)
     })
 
     app.delete('/cars/:id', async(req, res) => {
@@ -69,7 +63,6 @@ async function run() {
 
     app.put('/cars/:id', async(req, res) =>{
       const id = req.params.id;
-      console.log(id);
       const filter = {_id: new ObjectId(id)};
       const optiion = {upsert: true}
       const updatetingCar = req.body;
@@ -84,15 +77,10 @@ async function run() {
       res.send(result);
     })
 
-
-    // app.get('/category/:id', async(req, res) => {
-    //   const id = req.params.id;
-    //   const query = {category_id: id};
-    //   const result = await carCollection.find(query).toArray();
-    //   res.send(result)
-      
-    // })
-
+    app.get('/others', async(req, res) =>{
+      const result = await otherCollection.find().toArray();
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
