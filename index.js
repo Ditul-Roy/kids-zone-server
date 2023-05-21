@@ -12,7 +12,7 @@ app.get('/', (req, res) =>{
     res.send('kids car server is running')
 })
 
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bylwpc6.mongodb.net/?retryWrites=true&w=majority`;
+const uri = `mongodb+srv://carToys:XNlx1hIG0d4lEDmf@cluster0.bylwpc6.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -20,26 +20,32 @@ const client = new MongoClient(uri, {
     version: ServerApiVersion.v1,
     strict: true,
     deprecationErrors: true,
-  }
+  },
 });
 
 
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    client.connect()
+    // client.connect()
 
     const carCollection = client.db('carszoneDB').collection('carzone');
     const otherCollection = client.db('carszoneDB').collection('others');
 
-    app.post('/cars', async(req, res) => {
+    app.post('/allcars', async(req, res) => {
       const newCar = req.body;
       console.log(newCar);
       const result = await carCollection.insertOne(newCar);
       res.send(result);
     })
 
-    app.get('/cars', async(req, res) =>{
+    app.get('/allcars', async(req, res) =>{
+      const query = {};
+      const result = await carCollection.find(query).toArray();
+      res.send(result)
+    })
+
+    app.get('/onlycars', async(req, res) =>{
       let query = {};
       if(req.query?.email){
         query = {email : req.query.email}
@@ -48,21 +54,21 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/cars/:id', async(req, res) =>{
+    app.get('/mycars/:id', async(req, res) =>{
       const id = req.params.id;
       const query = {_id: new ObjectId(id)};
       const carrResult = await carCollection.findOne(query);
       res.send(carrResult)
     })
 
-    app.delete('/cars/:id', async(req, res) => {
+    app.delete('/allcars/:id', async(req, res) => {
       const id = req.params.id;
       const query = {_id: new ObjectId(id)};
       const result = await carCollection.deleteOne(query);
       res.send(result)
     })
 
-    app.put('/cars/:id', async(req, res) =>{
+    app.put('/allcars/:id', async(req, res) =>{
       const id = req.params.id;
       const filter = {_id: new ObjectId(id)};
       const optiion = {upsert: true}
