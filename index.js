@@ -43,8 +43,7 @@ async function run() {
     // api get section
 
     app.get('/allcars', async(req, res) =>{
-      const query = {};
-      const result = await carCollection.find(query).limit(20).toArray();
+      const result = await carCollection.find({}).sort({price:1}).limit(20).toArray();
       res.send(result)
     })
 
