@@ -23,14 +23,15 @@ const client = new MongoClient(uri, {
   },
 });
 
-
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    // client.connect()
 
     const carCollection = client.db('carszoneDB').collection('carzone');
     const otherCollection = client.db('carszoneDB').collection('others');
+
+
+    // api post section
 
     app.post('/allcars', async(req, res) => {
       const newCar = req.body;
@@ -39,18 +40,22 @@ async function run() {
       res.send(result);
     })
 
+    // api get section
+
     app.get('/allcars', async(req, res) =>{
       const query = {};
-      const result = await carCollection.find(query).toArray();
+      const result = await carCollection.find(query).limit(20).toArray();
       res.send(result)
     })
+
+    // api get with email
 
     app.get('/onlycars', async(req, res) =>{
       let query = {};
       if(req.query?.email){
         query = {email : req.query.email}
       }
-      const result = await carCollection.find(query).limit(20).toArray();
+      const result = await carCollection.find(query).toArray();
       res.send(result);
     })
 
@@ -61,12 +66,16 @@ async function run() {
       res.send(carrResult)
     })
 
+    // api delete  section
+
     app.delete('/allcars/:id', async(req, res) => {
       const id = req.params.id;
       const query = {_id: new ObjectId(id)};
       const result = await carCollection.deleteOne(query);
       res.send(result)
     })
+
+    // api update sectoion
 
     app.put('/allcars/:id', async(req, res) =>{
       const id = req.params.id;
@@ -84,6 +93,8 @@ async function run() {
       res.send(result);
     })
 
+    // others section
+    
     app.get('/others', async(req, res) =>{
       const result = await otherCollection.find().toArray();
       res.send(result);
